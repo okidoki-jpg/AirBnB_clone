@@ -190,62 +190,6 @@ class HBNBCommand(cmd.Cmd):
         database = storage.all()
         print(len([database[obj].__str__() for obj in database.keys() if arg in obj]))
 
-                
-    def default(self, arg):
-        """
-            If a known command is not entered then this function
-            will execute. This creates an alternative way of using
-            the console.
-        """
-
-        H_cmds = {"all": self.do_all, "count": self.count, 
-                  "show": self.do_show, "destroy": self.do_destroy}
-
-        obj_ext = re.search(r'[\w]*', arg)
-        obj_name = obj_ext if obj_ext is None else obj_ext.group(0)
-        if len(obj_name) == 0 or obj_name is None:
-            print("** class doesn't exist **")
-            return
-
-        com = re.search(r'(?<=\.)[\w]*', arg)
-        command = com if com is None else com.group(0)
-
-        if command in ["all", "count"]:
-            H_cmds[command](obj_name)
-            return
-
-        else:
-            obj_id_ext = re.search(r'(?<=")[\w.+%@-]+(?=")', arg)
-            obj_id = obj_id_ext if obj_id_ext is None else obj_id_ext.group(0)
-
-            if command in ["show", "destroy"]:
-                if obj_id is None:
-                    H_cmds[command](obj_name)
-                    return
-                H_cmds[command](obj_name + " " + obj_id)
-
-            elif command == "update":
-                obj_dict_ext = re.search(r'{(.*?)}', arg)
-                obj_dict = obj_dict_ext if obj_dict_ext is None else obj_dict_ext.group(0)
-                if obj_dict is None:
-                    details_list = re.findall(r'(?<=")[\w.+%@-]+(?=")', arg)
-                    detail = " ".join(details_list)
-                    self.do_update(obj_name + " " + detail)
-                
-                else:
-                    try:
-                        
-                        obj_dict_conv = ast.literal_eval(obj_dict) \
-                            if len(obj_dict) > 2 else ast.literal_eval(None)
-                        for key, value in obj_dict_conv.items():
-                            self.do_update(obj_name + " " + obj_id + " " + key + " " + str(value))
-
-                    except ValueError or TypeError:
-                        print('Wrong dictionary, "Format: {key: value, ...}"')
-
-            else:
-                print("invalid command")
-
 
 if __name__ == '__main__':
 	HBNBCommand().cmdloop()
