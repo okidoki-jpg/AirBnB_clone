@@ -2,8 +2,28 @@
 """Commandline
 """
 import cmd
-from models import storage
+import re
+import shlex
 from models.base_model import BaseModel
+from models.user import User
+from models.amenity import Amenity
+from models.city import City
+from models.place import Place
+from models.review import Review
+from models.state import State
+from models import storage
+
+
+def split_(line):
+    """Return Split Input String
+    """
+    
+    deli = "," if "," in line else " "
+    args = shlex.shlex(line, posix=True)
+    args.whitespace += deli
+    args.whitespace_split = True
+    args = list(args)
+    return args
 
 
 class HBNBCommand(cmd.Cmd):
@@ -43,7 +63,8 @@ class HBNBCommand(cmd.Cmd):
             print("** class name missing **")
             return
 
-        class_ = line.split()[0].strip()
+        args = split_(line)
+        class_ = args[0]
         if not issubclass(globals().get(class_, str), BaseModel):
             print("** class doesn't exist **")
         else:
@@ -63,7 +84,8 @@ class HBNBCommand(cmd.Cmd):
             print("** class name missing **")
             return
 
-        args = line.split()
+        args = split_(line)
+
         if len(args) < 2:
             print("** instance id missing **")
             return
@@ -91,7 +113,7 @@ class HBNBCommand(cmd.Cmd):
             print("** class name missing **")
             return
 
-        args = line.split()
+        args = split_(line)
         if len(args) < 2:
             print("** instance id missing **")
             return
@@ -117,11 +139,12 @@ class HBNBCommand(cmd.Cmd):
         Usage: all <clasd name> | all
         """
 
+        args = split_(line)
         if not line:
-            models = storage.all().values()
+            models = storage.all()
             print([str(mod) for mod in models])
         else:
-            class_ = line.split()[0]
+            class_ = args[0]
             if not issubclass(globals().get(class_, str), BaseModel):
                 print("** class doesn't exist **")
                 return
@@ -139,30 +162,30 @@ class HBNBCommand(cmd.Cmd):
             print("** class name missing **")
             return
 
-        args = line.split()
+        args = split_(line)
 
         class_ = args[0]
         if not issubclass(globals().get(class_, str), BaseModel):
             print("** class doesn't exist **")
             return
-        if len(args) == 1:
+        elif len(args) == 1:
             print("** instance id missing **")
             return
-        if len(args) == 2:
+        elif len(args) == 2: 
             print("** attribute name missing **")
             return
-        if len(args) == 3:
+        elif len(args) == 3:
             print("** value missing **")
             return
 
-        id = args[1]
+        id = args[1].strip()
         key = f"{class_}.{id}"
         model = storage.all().get(key)
         if not model:
             print("** no instance found **")
             return
 
-        attr = args[2]
+        attr = args[2].strip()
         if attr in ["id", "created_at", "updated_at"]:
             print("** attribute name forbidden **")
             return
@@ -175,6 +198,35 @@ class HBNBCommand(cmd.Cmd):
 
         setattr(model, attr, value)
         model.save()
+
+    def do_count(self, line):
+        """Count number of Object Instances
+        """
+
+        class_ = split_(line)[0]
+        models = storage.all().values()
+        print(len([mod for mod in models if type(mod).__name__ == class_]))
+
+    def default(self, line):
+
+        regex = r'^\s*(\w+)\.(\w+)(\(.*\))\s*$'
+        match = re.match(regex, line)
+
+        try:
+            class_ = match.group(1)
+            command = f"do_{match.group(2)}"
+            args = match.group(3)[1:-1]
+        except AttributeError:
+            print(f"*** Unknown syntax: {line}")
+            return
+
+        methods = [method for method in HBNBCommand.__dict__ if
+                   method.startswith('do_')][2:]
+
+        if command in methods:
+            eval("self." + command)(f"{class_}, {args}")
+        else:
+            print(f"*** Unknown syntax: {line}")
 
 
 if __name__ == "__main__":

@@ -66,3 +66,9 @@ class BaseModel:
         res["created_at"] = self.created_at.isoformat()
 
         return res
+
+    classmethod
+    def all(cls):
+        """Return a list of all instances of this class."""
+        print(cls)
+        return [v for k, v in storage.all().items() if isinstance(v, cls)]
