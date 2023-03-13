@@ -17,10 +17,10 @@ class test_User(unittest.TestCase):
             setup
         """
         cls.dummy_user = User()
-        cls.dummy_user.email = ""
-        cls.dummy_user.password = ""
-        cls.dummy_user.first_name = ""
-        cls.dummy_user.last_name = ""
+        cls.dummy_user.email = "test@email.com"
+        cls.dummy_user.password = "suoer secret password"
+        cls.dummy_user.first_name = "Patrick"
+        cls.dummy_user.last_name = "Star"
 
     @classmethod
     def tearDownClass(cls):
@@ -57,12 +57,13 @@ class test_User(unittest.TestCase):
         """
             test for name
         """
-        self.assertTrue(self.dummy_user.password, None)
+        self.assertTrue(self.dummy_user.password, "")
 
     def test_first_name(self):
         """
             test for name
         """
+
         self.assertTrue(self.dummy_user.first_name, None)
 
     def test_last_name(self):

@@ -17,7 +17,7 @@ class test_State(unittest.TestCase):
             setup
         """
         cls.dummy_state = State()
-        cls.dummy_state.name = None
+        cls.dummy_state.name = "Bikini Bottom"
 
     @classmethod
     def tearDownClass(cls):

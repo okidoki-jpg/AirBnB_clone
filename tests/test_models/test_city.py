@@ -18,8 +18,8 @@ class test_City(unittest.TestCase):
             setup.
         """
         cls.mock_city = City()
-        cls.mock_city.name = None
-        cls.mock_city.state_id = None
+        cls.mock_city.name = "1234"
+        cls.mock_city.state_id = "4321-1234"
 
     @classmethod
     def tearDownClass(cls):

@@ -25,9 +25,3 @@ class User(BaseModel):
         """Initialize User Instance
         """
         super().__init__(*args, **kwargs)
-
-    @classmethod
-    def all(cls):
-        """Returns a list of all instances of the User class"""
-        from models import storage
-        return list(storage.all(cls).values())

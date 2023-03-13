@@ -19,17 +19,17 @@ class test_Place(unittest.TestCase):
             setup
         """
         cls.dummy_city = Place()
-        cls.dummy_city.city_id = None
-        cls.dummy_city.user_id = None
-        cls.dummy_city.name = None
-        cls.dummy_city.description = None
-        cls.dummy_city.number_rooms = None
-        cls.dummy_city.number_bathrooms = None
-        cls.dummy_city.max_guest = None
-        cls.dummy_city.price_by_night = None
-        cls.dummy_city.latitude = None
-        cls.dummy_city.longitude = None
-        cls.dummy_city.amenity_ids = None
+        cls.dummy_city.city_id = "123-456"
+        cls.dummy_city.user_id = "1234-5678"
+        cls.dummy_city.name = "my city"
+        cls.dummy_city.description = "its pretty neat"
+        cls.dummy_city.number_rooms = 5
+        cls.dummy_city.number_bathrooms = 3
+        cls.dummy_city.max_guest = 8
+        cls.dummy_city.price_by_night = 200
+        cls.dummy_city.latitude = -23.456789
+        cls.dummy_city.longitude = 156.7890123
+        cls.dummy_city.amenity_ids = "90210"
 
 
     @classmethod

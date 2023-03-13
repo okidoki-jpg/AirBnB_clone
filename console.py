@@ -17,7 +17,16 @@ from models import storage
 def split_(line):
     """Return Split Input String
     """
-    
+
+    # if update input has dictionary
+    pat = r"^(\w+), (.+), (\{.*\})$"
+    m = re.match(pat, line)
+    if m:
+        args = list(m.groups())[:2]
+        args += [eval(m.group(3))]
+        return args
+
+    # any other input
     deli = "," if "," in line else " "
     args = shlex.shlex(line, posix=True)
     args.whitespace += deli
@@ -37,12 +46,16 @@ class HBNBCommand(cmd.Cmd):
 
     def do_EOF(self, line):
         """EOF command to exit the program
+
+        Usage: ^d | EOF
         """
 
         return True
 
     def do_quit(self, line):
         """Quit command to exit the program
+
+        Usage: quit
         """
 
         return True
@@ -56,7 +69,7 @@ class HBNBCommand(cmd.Cmd):
     def do_create(self, line):
         """Creates a new instance of BaseModel
 
-        Usage: create <class name>
+        Usage: <ckass name>.create() | create <class name>
         """
 
         if not line:
@@ -65,6 +78,8 @@ class HBNBCommand(cmd.Cmd):
 
         args = split_(line)
         class_ = args[0]
+
+        # Validate Obj Class
         if not issubclass(globals().get(class_, str), BaseModel):
             print("** class doesn't exist **")
         else:
@@ -77,7 +92,7 @@ class HBNBCommand(cmd.Cmd):
         """Prints the string representation of an instance
         based on the class name and id
 
-        Usage: show <class name> <id>
+        Usage: <class name>.show(<id>) | show <class name> <id>
         """
 
         if not line:
@@ -91,6 +106,8 @@ class HBNBCommand(cmd.Cmd):
             return
 
         class_, id = args[0], args[1]
+        
+        # Validate Obj Class
         if not issubclass(globals().get(class_, str), BaseModel):
             print("** class doesn't exist **")
             return
@@ -106,7 +123,7 @@ class HBNBCommand(cmd.Cmd):
     def do_destroy(self, line):
         """Deletes an instance based on the class name and id
 
-        Usage: destroy <class name> <id>
+        Usage: <class name>.destroy(<id>) | destroy <class name> <id>
         """
 
         if not line:
@@ -119,6 +136,8 @@ class HBNBCommand(cmd.Cmd):
             return
 
         class_, id = args[0], args[1]
+
+        # Validate Obj Class
         if not issubclass(globals().get(class_, str), BaseModel):
             print("** class doesn't exist **")
             return
@@ -136,7 +155,7 @@ class HBNBCommand(cmd.Cmd):
         Prints all string representation of all instances
         based or not on the class name.
 
-        Usage: all <clasd name> | all
+        Usage: <class name>.all() | all <class name> | all
         """
 
         args = split_(line)
@@ -145,6 +164,8 @@ class HBNBCommand(cmd.Cmd):
             print([str(mod) for mod in models])
         else:
             class_ = args[0]
+
+            # Validate Obj Class
             if not issubclass(globals().get(class_, str), BaseModel):
                 print("** class doesn't exist **")
                 return
@@ -155,9 +176,11 @@ class HBNBCommand(cmd.Cmd):
         """Updates an instance based on the class name and id
         by adding or updating attribute
 
-        Usage: update <class name> <id> <attribute name> "<attribute value>"
+        Usage: <class name>.update(<id>, <attribute name>, "attribute value>) | <class name>.update(<id>, <dictionary>) |
+         update <class name> <id> <attribute name> "<attribute value>"
         """
 
+        kwargs = {}
         if not line:
             print("** class name missing **")
             return
@@ -165,15 +188,20 @@ class HBNBCommand(cmd.Cmd):
         args = split_(line)
 
         class_ = args[0]
+
+        # Validate Obj Class
         if not issubclass(globals().get(class_, str), BaseModel):
             print("** class doesn't exist **")
             return
         elif len(args) == 1:
             print("** instance id missing **")
             return
-        elif len(args) == 2: 
+        elif len(args) == 2:
             print("** attribute name missing **")
             return
+        # Handle input with dictionary
+        elif len(args) == 3 and isinstance(args[2], dict):
+            kwargs = args[2]
         elif len(args) == 3:
             print("** value missing **")
             return
@@ -185,44 +213,79 @@ class HBNBCommand(cmd.Cmd):
             print("** no instance found **")
             return
 
-        attr = args[2].strip()
-        if attr in ["id", "created_at", "updated_at"]:
+        # Initialize attr if args has no dict
+        attr = args[2].strip() if isinstance(args[2], str) else ''
+
+        # Prohibit modification to special attr.
+        blacklist = ["id", "created_at", "updated_at"]
+        if any(val in blacklist
+               for val in [attr] + list(kwargs.keys())):
             print("** attribute name forbidden **")
             return
 
-        value = args[3].strip('"')
-        if value.isdigit():
-            value = int(value)
-        elif value.isnumeric():
-            value = float(value)
+        # Define loop duration based on args[2] type
+        dur = len(kwargs) if kwargs else len(attr)
+        for idx in range(dur):
+            # Initialize value and attr with kwargs properties
+            if kwargs:
+                value = str(list(kwargs.values())[idx])
+                attr = list(kwargs.keys())[idx]
+            else:
+            # Initialize value with arg[3], attr already defined
+                value = args[3].strip('"')
 
-        setattr(model, attr, value)
+            # Convert value to appropriate number type
+            if value.isdigit():
+                value = int(value)
+            elif value.isnumeric():
+                value = float(value)
+
+            setattr(model, str(attr), value)
         model.save()
 
     def do_count(self, line):
         """Count number of Object Instances
+
+        Usage: <class name>.count() | count <class name> | count
         """
 
-        class_ = split_(line)[0]
         models = storage.all().values()
-        print(len([mod for mod in models if type(mod).__name__ == class_]))
+        if not line:
+            print(len([mod for mod in models]))
+        else:
+            class_ = split_(line)[0]
+            print(len([mod for mod in models if type(mod).__name__ == class_]))
 
     def default(self, line):
+        """default behaviour method for edge cases
+        """
 
+        # Define expected regex pattern
         regex = r'^\s*(\w+)\.(\w+)(\(.*\))\s*$'
         match = re.match(regex, line)
 
         try:
+            # Split input into relevant variables
             class_ = match.group(1)
             command = f"do_{match.group(2)}"
             args = match.group(3)[1:-1]
-        except AttributeError:
+
+            # Define & test valid dictionary
+            pat = r"^(.+), (\{.*\})$"
+            match = re.match(pat, args)
+            if match:
+                assert type(eval(match.group(2))) == dict
+
+        except (AttributeError, ValueError, NameError,
+                SyntaxError, AssertionError):
             print(f"*** Unknown syntax: {line}")
             return
 
+        # Define valid "do_" methods
         methods = [method for method in HBNBCommand.__dict__ if
                    method.startswith('do_')][2:]
 
+        # Execute valid "do_" method
         if command in methods:
             eval("self." + command)(f"{class_}, {args}")
         else:

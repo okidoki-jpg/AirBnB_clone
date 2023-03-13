@@ -2,35 +2,36 @@
 """ testing amenity """
 
 import unittest
-from models.amenity import Amenity as AT
-from models.base_model import BaseModel as BM
+from models.amenity import Amenity
+from models.base_model import BaseModel
 
-class test_AT(unittest.TestCase):
+class TestAT(unittest.TestCase):
 	""" testing class """
-	
-	@classmethod
-	def setupClass(cls):
-		""" setting up process """
-		cls.mock_amenity = AT()
-		cls.mock_amenity.name = "test"
 
-	@classmethod 
-	def teardownClass(cls):
+	@classmethod
+	def setUpClass(cls):
+		""" setting up process """
+		cls.amenity = Amenity()
+		cls.amenity.name = "test"
+
+	@classmethod
+	def tearDownClass(cls):
 		""" tear down """
-		del cls.mock_amenity
+		del cls.amenity
+
 
 	def test_inheritance(self):
 		""" testing for the inheritance """
 
-		self.assertIsInstance(self.mock_amenity, BM)
-		self.assertTrue(hasattr(self.mock_amenity, "id"))
-		self.assertTrue(hasattr(self.mock_amenity, "created_at"))
-		self.assertTrue(hasattr(self.mock_amenity, "updated_at"))
+		self.assertTrue(isinstance(self.amenity, BaseModel))
+		self.assertTrue(hasattr(self.amenity, "id"))
+		self.assertTrue(hasattr(self.amenity, "created_at"))
+		self.assertTrue(hasattr(self.amenity, "updated_at"))
 
 
 	def test_attrs(self):
 		""" test for the attr or variables """
-		self.assertTrue(hasattr(self.mock_amenity, "name"))
+		self.assertTrue(hasattr(self.amenity, "name"))
 
 
 if __name__ == "__main__":
