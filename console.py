@@ -106,7 +106,7 @@ class HBNBCommand(cmd.Cmd):
             return
 
         class_, id = args[0], args[1]
-        
+
         # Validate Obj Class
         if not issubclass(globals().get(class_, str), BaseModel):
             print("** class doesn't exist **")
@@ -176,7 +176,8 @@ class HBNBCommand(cmd.Cmd):
         """Updates an instance based on the class name and id
         by adding or updating attribute
 
-        Usage: <class name>.update(<id>, <attribute name>, "attribute value>) | <class name>.update(<id>, <dictionary>) |
+        Usage: <class name>.update(<id>, <attribute name>, "attribute value>) |
+        <class name>.update(<id>, <dictionary>) |
          update <class name> <id> <attribute name> "<attribute value>"
         """
 
@@ -231,7 +232,7 @@ class HBNBCommand(cmd.Cmd):
                 value = str(list(kwargs.values())[idx])
                 attr = list(kwargs.keys())[idx]
             else:
-            # Initialize value with arg[3], attr already defined
+                # Initialize value with arg[3], attr already defined
                 value = args[3].strip('"')
 
             # Convert value to appropriate number type
