@@ -36,14 +36,14 @@ class BaseModel:
         else:
             self.id = str(uuid4())
             self.created_at = datetime.now()
-            self.updated_at = datetime.now()
+            self.updated_at = self.created_at
             storage.new(self)
 
     def __str__(self):
         """Returns BaseModel object string representation
         """
 
-        name = type(self).__name__
+        name = self.__class__.__name__
         attrs = self.__dict__
 
         return f"[{name}] ({self.id}) {attrs}"
@@ -53,7 +53,7 @@ class BaseModel:
         """
 
         self.updated_at = datetime.now()
-        storage.save()
+        return storage.save()
 
     def to_dict(self):
         """Returns a dictionary of keys/values of instance
